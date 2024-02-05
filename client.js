@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let rewrite = '';
 
         const apiKey = document.getElementById('key').value;
+
         if(apiKey === '') {
             alert('Please enter an OpenAI API key');
             setReady(true);
