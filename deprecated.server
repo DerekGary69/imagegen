@@ -1,0 +1,47 @@
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+require('dotenv').config();
+
+const OpenAI = require('openai');
+const openai = new OpenAI(process.env.OPENAI_API_KEY);
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+app.use(express.static('public'));
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
+io.on('connection', (socket) => {
+    // console.log('New client connected');
+    // Handle socket communication
+    socket.on('reqimage', (data) => {
+        console.log('img gen request received');
+        openai.images.generate({ 
+            model: "dall-e-3",
+            prompt: data.prompt,
+            size: data.size,
+            style: data.style,
+            response_format: "url"
+        })
+            .then((res) => {
+                console.log(res.data);
+                let resObject = {
+                    url: res.data[0].url,
+                    prompt: data.prompt
+                };
+                socket.emit('resimage', resObject);
+            })
+            .catch((err) => {
+                console.log(err);
+                socket.emit('imgerror', err.message);
+            });
+    });
+});
+
+const port = process.env.PORT || 3000;
+server.listen(port, () => console.log(`Server running on port ${port}`));

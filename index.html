@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AIMG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="client.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+
+    /* Reset CSS */
+    body, div, h1, h2, p, select, input, button, img {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        font-family: sans-serif;
+        vertical-align: baseline;
+    }
+    /* End Reset CSS */
+
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #b9c1c2;
+        padding: 1rem;
+    }
+
+    .busy {
+        pointer-events: none;
+        opacity: .5;
+
+    }
+
+    #loader > * {
+        display: none;
+    }
+
+    #loader.busy > *, #loader.busy {
+        display: flex;
+        opacity: 1;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2em;
+        padding-bottom: 1rem;
+        font-weight: bold;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    #params {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    #params > * {
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+    }
+
+    #prompt, #key {
+        font-size: 1em;
+        padding: 1rem;
+        border-radius: .8em;
+        width: 80%;
+        background-color: white;
+        box-shadow: -12px 12px 0px black;
+    }
+
+    #rewrite {
+        display: flex;
+    }
+
+    #rewrite label {
+        font-size: 1em;
+        padding: 1rem;
+        border-radius: .8em;
+        width: max-content;
+        background-color: white;
+        box-shadow: -12px 12px 0px black;
+        user-select: none;
+    }
+
+    #togglerewrite {
+        margin-left: .8rem;
+        transform: scale(1.5);
+    }
+
+    select {
+        font-size: 1em;
+        padding: 1rem;
+        border-radius: .8em;
+        width: 80%;
+        box-shadow: -12px 12px 0px black;
+    }
+
+    .styledesc {
+        font-size: 1em;
+        padding: 1rem;
+        line-height: 1.5em;
+    }
+
+    .textfield::before {
+        content: '"';
+    }
+
+    .textfield::after {
+        content: '"';
+    }
+
+    
+
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin-bottom: 1em;
+        cursor: pointer;
+        border-radius: .8em;
+        user-select: none;
+        box-shadow: -12px 12px 0px #336d35;
+    }
+
+    .gen {
+        display: flex;
+        position: relative;
+    }
+
+    .genimg {
+        max-width: 100vw;
+        width: 100%;
+    }
+
+    .toggleDescContainer {
+        position: absolute;
+        display: flex;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        transition: all 0.5s ease;
+        align-items: center;
+        pointer-events: auto;
+    }
+
+    .toggleDesc {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        font-size: 2rem;
+        color: white;
+        padding: 1rem;
+        border-radius: .8em;
+        cursor: pointer;
+        user-select: none;
+        z-index: 99;
+    }
+
+    .imgdesc {
+        top: 1em;
+        color: white;
+        padding: 1rem;
+        opacity: 1;
+        transition: all 0.5s ease;
+    }
+
+    .toggleDescContainer.closed {
+        background-color: transparent;
+        pointer-events: none;
+    }
+
+    .toggleDescContainer.closed > .imgdesc {
+        opacity: 0;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    #imglist {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spinner {
+        border: .5em solid #ffffff;
+        border-top: .5em solid #3498db;
+        border-radius: 50%;
+        width: 2em;
+        height: 2em;
+        animation: spin 2s linear infinite;
+        margin-bottom: 1em;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    #exampleprompt {
+        max-width: 80vw;
+    }
+
+    footer {
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding-top: 1rem;
+        font-family: 'Bebas Neue', sans-serif;
+    }
+  </style>
+</head>
+<body>
+    <h1>Image Gen</h1>
+    <div id="apikey">
+        <h2>API Key:</h2>
+        <input type="password" id="key" placeholder="Your OpenAI API Key">
+    </div>
+    <div id="params">
+        <h2 class="sizeh2">Image Size:</h2>
+        <select id="size">
+            <option value="1024x1024">1024x1024 (Square)</option>
+            <option value="1792x1024">1792x1024 (Landscape)</option>
+            <option value="1024x1792">1024x1792 (Portrait)</option>
+        </select>
+        <h2 class="styleh2">Image Style:</h2>
+        <p class="styledesc"><b>Vivid</b> causes the model to lean towards generating hyper-real and dramatic images. <br><b>Natural</b> causes the model to produce more natural, less hyper-real looking images.</p>
+        <select id="style">
+            <option value="vivid">Vivid</option>
+            <option value="natural">Natural</option>
+        </select>
+        <h2 class="prompth2">Prompt:</h2>
+        <p class="styledesc">By default, the AI will "automatically re-write" your prompt "for safety reasons, and to add more detail". <br>This can lead it to be inaccurate. Check the box below to instruct the AI to follow your prompt as closely as possible. <br>Unfortunately this does not work 100% reliably. <a href="https://platform.openai.com/docs/guides/images/prompting" target="_blank">Read more.</a> </p>
+        <div id="rewrite">
+            <label for="togglerewrite">Do not rewrite my prompt</label>   
+            <input type="checkbox" id="togglerewrite" name="togglerewrite" value="togglerewrite">
+        </div>
+        <p class="textfield">Your prompt will display here. Be as specific as possible, particularly the medium (photograph, painting, etc) and style keywords. An example prompt is below. </p>
+        <input type="text" id="prompt" placeholder="Describe the image in natural descriptive language">
+    </div>
+    <div id="loader" class="readylisten">
+        <div class="spinner"></div>
+    </div>
+    <button class="button readylisten" id="generate">Generate</button>
+    <p id="exampleprompt"><i>"Create an intricate photograph of a classic architectural interior. The space should be large, with high ceilings and grand arches, supported by towering columns carved with intricate designs. The flooring is made of polished marble with elaborate patterns inlaid. Large, ornate chandeliers hanging from the ceiling illuminate the space. The walls should be adorned with beautiful artwork, preferably from the renaissance period done in oil paints. The hall is furnished minimally with a few antique wooden benches and tables, bringing an air of elegance and history to the atmosphere."</i></p>
+    <div id="imglist">
+        <!-- <div class="gen">
+            <img class="genimg" src="https://oaidalleapiprodscus.blob.core.windows.net/private/org-7rtsh16ah6ccSK2YSCAK58Am/user-wSPrJs72uIlK35JB3GReiEVA/img-zGV0ZAUa0lUoxD7ObfAI8Bsn.png?st=2024-02-02T01%3A26%3A23Z&amp;se=2024-02-02T03%3A26%3A23Z&amp;sp=r&amp;sv=2021-08-06&amp;sr=b&amp;rscd=inline&amp;rsct=image/png&amp;skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&amp;sktid=a48cca56-e6da-484e-a814-9c849652bcb3&amp;skt=2024-02-02T02%3A20%3A54Z&amp;ske=2024-02-03T02%3A20%3A54Z&amp;sks=b&amp;skv=2021-08-06&amp;sig=ATFd1a%2BV727EYTbWJi64wjhcfAcC3Dv6ljz/dkzZDBc%3D">
+            <div class="toggleDescContainer">
+                <p class="imgdesc">
+                    "Create an intricate photograph of a classic architectural interior. The space should be large, with high ceilings and grand arches, supported by towering columns carved with intricate designs. The flooring is made of polished marble with elaborate patterns inlaid. Large, ornate chandeliers hanging from the ceiling illuminate the space. The walls should be adorned with beautiful artwork, preferably from the renaissance period done in oil paints. The hall is furnished minimally with a few antique wooden benches and tables, bringing an air of elegance and history to the atmosphere."
+                </p>
+            </div>
+            <span class="toggleDesc material-symbols-outlined">
+                description
+            </span>
+        </div> -->
+    </div>
+</body>
+<footer>FINBAR 2024</footer>
+</html>
